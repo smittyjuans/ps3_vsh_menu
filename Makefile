@@ -1,13 +1,12 @@
-TARGET   := SR2_ModMenu.elf
-OBJS     := main.o
-CC       := ppu-gcc
-CXX      := ppu-g++
-CXXFLAGS := -O2 -Wall
+TARGET		:=	sr2_trainer
+TITLE		:=	Saints Row 2 PS3 Live Trainer
+PROJECT		:=	SR2_Trainer_SPRX
 
-all: $(TARGET)
+# Point to standard PSL1GHT environment libraries
+include $(PSL1GHT)/base_rules
 
-$(TARGET): $(OBJS)
-	$(CXX) $(OBJS) -o $(TARGET)
+# Compiler parameters
+CFILES		:=	main.cpp
+LDFLAGS		:=	-lpad -lsysfs
 
-clean:
-	rm -f *.o $(TARGET)
+include $(PSL1GHT)/ppu_rules

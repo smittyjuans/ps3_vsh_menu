@@ -15,18 +15,18 @@ int Active_Category = 0; // 0=Weapons, 1=Weather, 2=World, 3=Outfits, 4=Characte
 int Sub_Selection_Indices[5] = {0, 0, 0, 0, 0};
 
 // Static Constants for Data Sizes
-const int WEAPON_COUNT = 6;
-const int WEATHER_COUNT = 5;
-const int WORLD_COUNT = 5;
-const int CLOTHES_COUNT = 4;
-const int CHAR_COUNT = 4;
+const int WEAPON_COUNT = 12;
+const int WEATHER_COUNT = 6;
+const int WORLD_COUNT = 7;
+const int CLOTHES_COUNT = 7;
+const int CHAR_COUNT = 15;
 
 // Target Engine Offsets for Saints Row 2 (PS3 Retail)
-#define WEAPON_ADD_TRIGGER_ADDR   0x002E5C10 // Native inventory add register
-#define WEATHER_SET_TRIGGER_ADDR  0x004B2A80 // Environment manager memory register
-#define WORLD_PHYSICS_FLAG_ADDR   0x003B2A10 // World manipulation baseline register
-#define OUTFIT_SWAP_POINTER_ADDR  0x01E8D910 // Player entity properties master address
-#define MODEL_SWAP_POINTER_ADDR   0x01E8D910 // Visual mesh model lookup dynamic pointer
+#define WEAPON_ADD_TRIGGER_ADDR   0x002E5C10 
+#define WEATHER_SET_TRIGGER_ADDR  0x004B2A80 
+#define WORLD_PHYSICS_FLAG_ADDR   0x003B2A10 
+#define OUTFIT_SWAP_POINTER_ADDR  0x01E8D910 
+#define MODEL_SWAP_POINTER_ADDR   0x01E8D910 
 
 // Data Structures
 struct ModOption {
@@ -34,44 +34,67 @@ struct ModOption {
     uint32_t ValuePayload;
 };
 
-// --- DATA ARRAYS ---
+// --- EXTENDED DATA ARRAYS ---
 ModOption WeaponList[WEAPON_COUNT] = {
-    {"GDHC .50 Pistol",   932},
-    {"K6 Krukov Rifle",   935},
-    {"McManus 2010 Sniper", 938},
-    {"Mini-Gun Heavy",    939},
-    {"RPG Rocket Launcher", 946},
-    {"Samurai Sword",     948}
+    {"GDHC .50 Pistol",    932},
+    {"Vice 9 Pistol",      931},
+    {"K6 Krukov Rifle",    935},
+    {"AR-50 Launcher",     936},
+    {"AS12 Riot Shotgun",  934},
+    {"Pimp Cane Shotgun",  949},
+    {"GAL 43 Submachine",  933},
+    {"McManus Sniper 2010",938},
+    {"Mini-Gun Heavy",     939},
+    {"RPG Rocket Launcher",946},
+    {"Samurai Sword",      948},
+    {"Stun Gun",           941}
 };
 
 ModOption WeatherList[WEATHER_COUNT] = {
-    {"Clear Skies",    78669},
-    {"Thunderstorm",     666},
-    {"Overcast Night", 78665},
-    {"Heavy Rain Fall",78666},
-    {"Normal Ambience",78670}
+    {"Clear Skies",        78669},
+    {"Thunderstorm",       666},
+    {"Overcast Night",     78665},
+    {"Heavy Rain Fall",    78666},
+    {"Foggy Morning",      78667},
+    {"Normal Ambience",    78670}
 };
 
 ModOption WorldList[WORLD_COUNT] = {
-    {"Low Gravity Mode",    18},
-    {"Super Explosions",     7},
-    {"Civilian Pedestrian War", 19},
-    {"Raining Pedestrians",  20},
-    {"Drunk Pedestrians",   15}
+    {"Low Gravity Mode",       18},
+    {"Super Explosions",        7},
+    {"Civilian Pedestrian War",19},
+    {"Raining Pedestrians",    20},
+    {"Drunk Pedestrians",      15},
+    {"Evil Cars Mode",         12},
+    {"Super Bad Cop Aggr",     11}
 };
 
 ModOption ClothingOutfits[CLOTHES_COUNT] = {
-    {"Full Pimp Suit Set",  0x0A},
-    {"Fireman Hazard Gear", 0x1F},
-    {"Prison Inmate Rags",  0x02},
-    {"Saints Gang Colors",  0x44}
+    {"Full Pimp Suit Set",     0x0A},
+    {"Fireman Hazard Gear",    0x1F},
+    {"Prison Inmate Rags",     0x02},
+    {"Saints Gang Colors",     0x44},
+    {"Police Uniform",         0x12},
+    {"Ninja Robes",            0x21},
+    {"Hot Dog Mascot Suit",    0x57}
 };
 
 ModOption CharacterMeshes[CHAR_COUNT] = {
-    {"Johnny Gat Mesh",     0x10A},
-    {"Shogo Akuji Mesh",    0x25C},
-    {"Mr. Sunshine Mesh",   0x3A1},
-    {"Ultor Guard Mesh",    0x0D4}
+    {"Johnny Gat",             0x10A},
+    {"Shaundi",                0x10B},
+    {"Pierce Washington",      0x10C},
+    {"Carlos Mendoza",         0x10D},
+    {"Aisha",                  0x10E},
+    {"Maero (Brotherhood)",    0x20A},
+    {"Matt Rhodes",            0x20C},
+    {"Jessica",                0x20B},
+    {"The General (Samedi)",   0x30A},
+    {"Mr. Sunshine",           0x3A1},
+    {"Veteran Child",          0x30C},
+    {"Shogo Akuji (Ronin)",    0x25C},
+    {"Jyunichi",               0x25E},
+    {"Dane Vogel (Ultor)",     0x0D1},
+    {"Ultor SWAT Guard",       0x0D4}
 };
 
 // --- FUNCTION EXECUTION MODULES ---
@@ -99,7 +122,6 @@ void Execute_Trainer_Modification() {
         case 3: { // Change Clothing Outfits
             uint32_t playerPtr = *(uint32_t*)OUTFIT_SWAP_POINTER_ADDR;
             if (playerPtr != 0) {
-                // Structural property offset handling internal apparel IDs natively
                 Poke_Memory_Byte(playerPtr + 0x2B4, ClothingOutfits[currentIdx].ValuePayload);
             }
             break;
@@ -108,7 +130,6 @@ void Execute_Trainer_Modification() {
         case 4: { // Character Model Swapping
             uint32_t playerPtr = *(uint32_t*)MODEL_SWAP_POINTER_ADDR;
             if (playerPtr != 0) {
-                // Main mesh index lookup pointer used to bypass custom boss generation tables
                 Poke_Memory_Byte(playerPtr + 0x1C, CharacterMeshes[currentIdx].ValuePayload);
             }
             break;
@@ -144,7 +165,7 @@ void SR2_Advanced_Input_Thread(uint64_t arg) {
                     sys_timer_usleep(200000);
                 }
 
-                // Vertical List Navigation: D-Pad UP / DOWN
+                // Get array boundary dynamically based on current page
                 int maxElements = 0;
                 if (Active_Category == 0) maxElements = WEAPON_COUNT;
                 else if (Active_Category == 1) maxElements = WEATHER_COUNT;
@@ -174,7 +195,7 @@ void SR2_Advanced_Input_Thread(uint64_t arg) {
                 }
             }
         }
-        sys_timer_usleep(16666); // 60Hz physics clock loop anchor
+        sys_timer_usleep(16666); 
     }
     sys_ppu_thread_exit(0);
 }
